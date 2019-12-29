@@ -29,31 +29,50 @@ export default class Game{
     }
     initBattle(){
         const BattleResource=this.BattleResource;
-        // for(let i in BattleResourceLengaburu){
-        //     let obj={}
-        //     obj['category']=i;
-        //     obj['LTotal']=BattleResourceLengaburu[i]
-        // }
-        // this.gameStatus=[];
         for(let i=0;i<BattleResource.length;i++){
-            const status={};
-            status[BattleResource[i]['category']]=BattleResource[i];
+            const status=BattleResource[i];
+            // status=;
             // status[BattleResource[i]['category']]['LTotal']=
-            status[BattleResource[i]['category']]['FTotal'] =
+            status['FTotal'] =
                 this.BattleResourceFalcornia[BattleResource[i]['category']];
+            status['FRemaining'] = 0;
+            status['LRemaining'] = 0;
+            status['LDeployed'] = 0;
             this.gameStatus.push(status);
+            if(true || BattleResource[i]['category'] === 'H'){
+                this.reduceBattalion(BattleResource[i])
+            }
         }
         return this.gameStatus;
     }
-    reduceBattalion(FArmy,LArmy){
+    reduceBattalion(individualBatallion){
         let deployedLArmy=0;
         let reduced=false;
         // 300 100*2
-        if(FArmy <= LArmy * 2){
-            deployedLArmy=parseInt(FArmy/2);
-            reduced=true;
+        // if(FArmy <= LArmy * 2){
+        //     deployedLArmy=parseInt(FArmy/2);
+        //     reduced=true;
+        // }else{
+        //     deployedLArmy=LArmy;
+        // }
+        if(individualBatallion['FTotal'] <= individualBatallion['LTotal'] * 2){
+            const calLDeployed=Math.ceil(individualBatallion['FTotal']/2);
+            //checking the edge condition Deploy should not be more than resource
+            if(calLDeployed > individualBatallion){
+
+            }
+            individualBatallion['LRemaining']=individualBatallion['LTotal']-calLDeployed;
+            individualBatallion['LDeployed']=calLDeployed;
+            individualBatallion['reduced']=true;
         }else{
-            deployedLArmy=LArmy;
+
         }
+        for(let i=0;i<this.gameStatus.length;i++){
+            if(this.gameStatus[i]['category'] === individualBatallion['category']){
+                this.gameStatus[i]=individualBatallion;
+                break;
+            }
+        }
+        // console.log('reduceBattalion',individualBatallion);
     }
 }

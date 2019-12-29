@@ -30,12 +30,12 @@ export default [
     {
         category:'E',
         weight:2,
-        LTotal:101
+        LTotal:50
     },
     {
         category:'AT',
         weight:2,
-        LTotal:20
+        LTotal:10
     },
     {
         category:'SG',
