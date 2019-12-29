@@ -1,0 +1,21 @@
+F-> 250 H, 50 E, 20 AT, 15 SG 
+L->100H+52H=152H
+RF->0H,
+RL->2H,37E
+LP->100 H, 50 E, 10 AT, 5 SG 
+
+G={
+    H:{
+        Result-F:0,
+        Result-L:2,
+        DF:250,
+        DL:152
+    },
+    E:{
+        Result-F:0,
+        Result-L:0,
+        DF:50,
+        DL:13+25
+    }
+}
+50-13=37

@@ -20,42 +20,47 @@
 //         weight:2
 //     }
 // }
-
+// { H: 100, E: 101, AT: 20, SG: 5 }
 export default [
     {
         category:'H',
-        weight:2
+        weight:2,
+        LTotal:100
     },
     {
         category:'E',
-        weight:2
+        weight:2,
+        LTotal:101
     },
     {
         category:'AT',
-        weight:2
+        weight:2,
+        LTotal:20
     },
     {
         category:'SG',
-        weight:2
+        weight:2,
+        LTotal:5
     }
 ]
+// 250 H, 50 E, 20 AT, 15 SG 
+// [
+//     {
+//         category:'H',
+//         LDeployed:152,
+//         LTotal:100,
+//         FTotal:250,
+//         status:enabled
 
-[
-    {
-        category:'H',
-        fDeployed:30,
-        LDeployed:00,
-        LTotal:0,
-        FTotal:0
-    },
-    {
-        category:'E',
-        fDeployed:30,
-        LDeployed:00
-    },
-    {
-        category:'AT',
-        fDeployed:30,
-        LDeployed:00
-    }
-]
+//     },
+//     {
+//         category:'E',
+//         fDeployed:13,
+//         LDeployed:00
+//     },
+//     {
+//         category:'AT',
+//         fDeployed:30,
+//         LDeployed:00
+//     }
+// ]
