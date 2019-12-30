@@ -6,26 +6,6 @@ export default class Game{
         this.BattleResourceFalcornia=(new Falicornia(FArmy)).getArmy();
         this.BattleResource=BattleResource;
         this.gameStatus=[];
-        // this.gameStatus=[
-        //     {
-        //         category:'H',
-        //         LDeployed:152,
-        //         LTotal:100,
-        //         FTotal:250,
-        //         status:enabled
-        
-        //     },
-        //     {
-        //         category:'E',
-        //         fDeployed:13,
-        //         LDeployed:00
-        //     },
-        //     {
-        //         category:'AT',
-        //         fDeployed:30,
-        //         LDeployed:00
-        //     }
-        // ]
     }
     initBattle(){
         const BattleResource=this.BattleResource;
@@ -57,19 +37,48 @@ export default class Game{
         // }
         if(individualBatallion['FTotal'] <= individualBatallion['LTotal'] * 2){
             const calLDeployed=Math.ceil(individualBatallion['FTotal']/2);
-            //checking the edge condition Deploy should not be more than resource
-            if(calLDeployed > individualBatallion){
-
-            }
             individualBatallion['LRemaining']=individualBatallion['LTotal']-calLDeployed;
             individualBatallion['LDeployed']=calLDeployed;
+            individualBatallion['FRemaining'] = 0;
             individualBatallion['reduced']=true;
         }else{
+            // const calLNeeded=Math.ceil(individualBatallion['FTotal']/2);
+            let calLNeeded=(individualBatallion['FTotal']) - 
+                            (individualBatallion['LTotal'] * 2)
+            //check calLNeeded should be always in the multiple of 2
+            if((calLNeeded%2) !== 0){
+                calLNeeded++;
+            }
+            // const aid=calLNeeded-individualBatallion['LTotal'];
+            let i=0;
+            for(;i<this.gameStatus.length;i++){
+                if(this.gameStatus[i]['category'] === individualBatallion['category']){
+                    // this.gameStatus[i]=individualBatallion;
+                    break;
+                }
+            }
+            if(calLNeeded <= this.gameStatus[i-1]['LRemaining']){
+                // aid=aid*2;
+                //weight
+                // calLNeeded*=2;
+                console.log('aid',calLNeeded,this.gameStatus[i-1]['LDeployed']);
+                this.gameStatus[i-1]['LDeployed']+=calLNeeded;
+                this.gameStatus[i-1]['LRemaining']-=calLNeeded;
+                this.gameStatus[i]['FRemaining']=this.gameStatus[i]['FTotal'] - calLNeeded;
 
+            }else if(aid <= this.gameStatus[i+1]['LRemaining']){
+
+            }else{
+                individualBatallion['reduced']='failed';
+            }
+            individualBatallion['LRemaining']=0;
+            individualBatallion['LDeployed']=individualBatallion['LTotal'];
+            individualBatallion['reduced']=true;
+            individualBatallion['FRemaining']-=(individualBatallion['LTotal'] * 2);
         }
         for(let i=0;i<this.gameStatus.length;i++){
             if(this.gameStatus[i]['category'] === individualBatallion['category']){
-                this.gameStatus[i]=individualBatallion;
+                // this.gameStatus[i]=individualBatallion;
                 break;
             }
         }
