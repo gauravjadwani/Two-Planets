@@ -9,6 +9,7 @@ export default class Game{
         // console.log('battle',p)
         this.BattleResource=p;
         this.gameStatus=[];
+        this.status='Wins';
         const BattleResource=this.BattleResource;
         for(let i=0;i<BattleResource.length;i++){
             const status=BattleResource[i];
@@ -25,8 +26,14 @@ export default class Game{
     getStatus(){
         return this.gameStatus;
     }
+    displayOutput(){
+        this.initBattle();
+        const str=`lengaburu deploys H${this.gameStatus[0]['LDeployed']} E ${this.gameStatus[1]['LDeployed']} AT ${this.gameStatus[2]['LDeployed']} SG ${this.gameStatus[3]['LDeployed']} and ${this.status}`;
+        return str;
+    }
     initBattle(){
         const gameStatus=this.gameStatus;
+        let status=this.status;
         for(let i=0;i<gameStatus.length;i++){
             const left=(i===0 ? {} :gameStatus[i-1])
             const right=(i==(gameStatus.length-1) ? {} :gameStatus[i+1])
@@ -42,32 +49,47 @@ export default class Game{
                 gameStatus[i+1]=reducedBattalions['right']
             }
         }
-        return gameStatus;
+        for(let i=0;i<gameStatus.length;i++){
+            // let staus
+            if(gameStatus[i]['FRemaining']!==0){
+                const left=(i===0 ? {} :gameStatus[i-1])
+                const right=(i==(gameStatus.length-1) ? {} :gameStatus[i+1])
+                const middle=gameStatus[i];
+                const res=this.takeHelp(left,middle,right);
+                if(gameStatus[i]['FRemaining']>0){
+                    this.status='Losses';
+                }
+            }
+        }
+        return {gameStatus,staus:this.status};
     }
     takeHelp(left,middle,right){
         if(left['LRemaining'] > 1){
             let calculateDeploy=middle['FRemaining'] * 2;
             if(calculateDeploy > left['LRemaining']){
+                
                 //left-right both should be reduced
                 //balance left
+                const deployTrans=calculateDeploy/2
                 const diff=calculateDeploy-left['LRemaining']
-                left['LRemaining']=0;
+                
                 left['LDeployed']=left['LTotal'];
                 calculateDeploy=diff;
+                console.log('if',calculateDeploy,diff)
 
                 //balance middle
-                middle['FRemaining']=diff/2
+                middle['FRemaining']=middle['FRemaining']-left['LRemaining'];
+                left['LRemaining']=0;
             }else{
                 //only left should be reduced
-                console.log('else')
-                left['LRemaining']=left['LRemaining']-calculateDeploy;
-                left['LDeployed']=left['LRemaining']+calculateDeploy;
+                const LRemaining=left['LRemaining'];
+                left['LRemaining']=LRemaining-calculateDeploy;
+                left['LDeployed']=LRemaining+calculateDeploy;
                 middle['FRemaining']=middle['FRemaining']-calculateDeploy/2;
             }
             if(middle['FRemaining'] > 0){
                 if(left['LRemaining'] > 0 || right['LRemaining'] > 0){
                     // reccursion
-                    // console.log('call reccursion')
                     this.takeHelp(left,middle,right)
                 }else{
                     //falicornia won
@@ -78,18 +100,16 @@ export default class Game{
             }else{
                 return {left,middle,right}
             }
-
-
             //balence middle
             //as 2L=R
-            
-
         }else{
-            const calLDeployed=Math.ceil(middle['FRemaining']/4);
-            
-            middle['FRemaining']=middle['FRemaining']-calLDeployed * 4;
-            right['LRemaining']=right['LTotal']-calLDeployed;
-            right['LDeployed']=right['LDeployed']+calLDeployed;
+            if(Object.keys(right).length > 0){
+                const calLDeployed=Math.ceil(middle['FRemaining']/4);
+                middle['FRemaining']=middle['FRemaining']-calLDeployed * 4;
+                right['LRemaining']=right['LTotal']-calLDeployed;
+                right['LDeployed']=right['LDeployed']+calLDeployed;
+            }
+
             return {left,middle,right}
         }
     }
@@ -97,11 +117,9 @@ export default class Game{
         //simple case without help
         const status='reduced';
         if(middle['FTotal'] <= middle['LTotal'] * 2){
-            console.log('reducedBattalion called for ',middle['category'])
-            
             const calLDeployed=Math.ceil(middle['FTotal']/2);
-            // console.log('exe',calLDeployed)
-            middle['LRemaining']=middle['LRemaining']-calLDeployed;
+            console.log('reduceBattalionNew',middle['category'],calLDeployed)
+            middle['LRemaining']=middle['LTotal']-calLDeployed;
             middle['LDeployed']+=calLDeployed;
             middle['FRemaining'] = 0;
             middle['reduced']=true;
@@ -113,10 +131,6 @@ export default class Game{
             middle['LDeployed']=middle['LTotal'];
             middle['FRemaining'] = middle['FTotal']-middle['LDeployed'] * 2;
             middle['reduced']=false;
-            const res=this.takeHelp(left,middle,right);
-            right=res['right'];
-            left=res['left'];
-            middle=res['middle'];
         }
         return {left,middle,right,status}
     }
