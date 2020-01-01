@@ -3,10 +3,10 @@ bin-debug/
 bin-release/
 [Oo]bj/
 [Bb]in/
-
+node-modules
 # Other files and folders
 .settings/
-
+.DS_Store
 # Executables
 *.swf
 *.air
