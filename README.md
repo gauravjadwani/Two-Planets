@@ -1,4 +1,4 @@
 # Two-Planets
 Two Planets
-#Run
+# Run
 node index.js(provide the custom input)
