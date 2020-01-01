@@ -1,13 +1,14 @@
 import BattleResource from './BattleResource.mjs';
 import Falicornia from './Falicornia.mjs';
 
+let p=BattleResource;
 export default class Game{
     constructor(FArmy){
+        // super();
         this.BattleResourceFalcornia=(new Falicornia(FArmy)).getArmy();
-        this.BattleResource=BattleResource;
+        // console.log('battle',p)
+        this.BattleResource=p;
         this.gameStatus=[];
-    }
-    initBattle(){
         const BattleResource=this.BattleResource;
         for(let i=0;i<BattleResource.length;i++){
             const status=BattleResource[i];
@@ -19,69 +20,105 @@ export default class Game{
             status['LRemaining'] = 0;
             status['LDeployed'] = 0;
             this.gameStatus.push(status);
-            if(true || BattleResource[i]['category'] === 'H'){
-                this.reduceBattalion(BattleResource[i])
-            }
         }
+    }
+    getStatus(){
         return this.gameStatus;
     }
-    reduceBattalion(individualBatallion){
-        let deployedLArmy=0;
-        let reduced=false;
-        // 300 100*2
-        // if(FArmy <= LArmy * 2){
-        //     deployedLArmy=parseInt(FArmy/2);
-        //     reduced=true;
-        // }else{
-        //     deployedLArmy=LArmy;
-        // }
-        if(individualBatallion['FTotal'] <= individualBatallion['LTotal'] * 2){
-            const calLDeployed=Math.ceil(individualBatallion['FTotal']/2);
-            individualBatallion['LRemaining']=individualBatallion['LTotal']-calLDeployed;
-            individualBatallion['LDeployed']=calLDeployed;
-            individualBatallion['FRemaining'] = 0;
-            individualBatallion['reduced']=true;
-        }else{
-            // const calLNeeded=Math.ceil(individualBatallion['FTotal']/2);
-            let calLNeeded=(individualBatallion['FTotal']) - 
-                            (individualBatallion['LTotal'] * 2)
-            //check calLNeeded should be always in the multiple of 2
-            if((calLNeeded%2) !== 0){
-                calLNeeded++;
+    initBattle(){
+        const gameStatus=this.gameStatus;
+        for(let i=0;i<gameStatus.length;i++){
+            const left=(i===0 ? {} :gameStatus[i-1])
+            const right=(i==(gameStatus.length-1) ? {} :gameStatus[i+1])
+            const middle=gameStatus[i];
+            const reducedBattalions=this.reduceBattalionNew(left,middle,right);
+            if(Object.keys(reducedBattalions['left'])>0){
+                gameStatus[i-1]=reducedBattalions['left']
             }
-            // const aid=calLNeeded-individualBatallion['LTotal'];
-            let i=0;
-            for(;i<this.gameStatus.length;i++){
-                if(this.gameStatus[i]['category'] === individualBatallion['category']){
-                    // this.gameStatus[i]=individualBatallion;
-                    break;
-                }
+            if(Object.keys(reducedBattalions['middle'])>0){
+                gameStatus[i]=reducedBattalions['middle']
             }
-            if(calLNeeded <= this.gameStatus[i-1]['LRemaining']){
-                // aid=aid*2;
-                //weight
-                // calLNeeded*=2;
-                console.log('aid',calLNeeded,this.gameStatus[i-1]['LDeployed']);
-                this.gameStatus[i-1]['LDeployed']+=calLNeeded;
-                this.gameStatus[i-1]['LRemaining']-=calLNeeded;
-                this.gameStatus[i]['FRemaining']=this.gameStatus[i]['FTotal'] - calLNeeded;
+            if(Object.keys(reducedBattalions['right'])>0){
+                gameStatus[i+1]=reducedBattalions['right']
+            }
+        }
+        return gameStatus;
+    }
+    takeHelp(left,middle,right){
+        if(left['LRemaining'] > 1){
+            let calculateDeploy=middle['FRemaining'] * 2;
+            if(calculateDeploy > left['LRemaining']){
+                //left-right both should be reduced
+                //balance left
+                const diff=calculateDeploy-left['LRemaining']
+                left['LRemaining']=0;
+                left['LDeployed']=left['LTotal'];
+                calculateDeploy=diff;
 
-            }else if(aid <= this.gameStatus[i+1]['LRemaining']){
+                //balance middle
+                middle['FRemaining']=diff/2
+            }else{
+                //only left should be reduced
+                console.log('else')
+                left['LRemaining']=left['LRemaining']-calculateDeploy;
+                left['LDeployed']=left['LRemaining']+calculateDeploy;
+                middle['FRemaining']=middle['FRemaining']-calculateDeploy/2;
+            }
+            if(middle['FRemaining'] > 0){
+                if(left['LRemaining'] > 0 || right['LRemaining'] > 0){
+                    // reccursion
+                    // console.log('call reccursion')
+                    this.takeHelp(left,middle,right)
+                }else{
+                    //falicornia won
+                    middle['reduced']='loss';
+                    return {left,middle,right}
+                }
 
             }else{
-                individualBatallion['reduced']='failed';
+                return {left,middle,right}
             }
-            individualBatallion['LRemaining']=0;
-            individualBatallion['LDeployed']=individualBatallion['LTotal'];
-            individualBatallion['reduced']=true;
-            individualBatallion['FRemaining']-=(individualBatallion['LTotal'] * 2);
+
+
+            //balence middle
+            //as 2L=R
+            
+
+        }else{
+            const calLDeployed=Math.ceil(middle['FRemaining']/4);
+            
+            middle['FRemaining']=middle['FRemaining']-calLDeployed * 4;
+            right['LRemaining']=right['LTotal']-calLDeployed;
+            right['LDeployed']=right['LDeployed']+calLDeployed;
+            return {left,middle,right}
         }
-        for(let i=0;i<this.gameStatus.length;i++){
-            if(this.gameStatus[i]['category'] === individualBatallion['category']){
-                // this.gameStatus[i]=individualBatallion;
-                break;
-            }
-        }
-        // console.log('reduceBattalion',individualBatallion);
     }
+    reduceBattalionNew(left,middle,right){
+        //simple case without help
+        const status='reduced';
+        if(middle['FTotal'] <= middle['LTotal'] * 2){
+            console.log('reducedBattalion called for ',middle['category'])
+            
+            const calLDeployed=Math.ceil(middle['FTotal']/2);
+            // console.log('exe',calLDeployed)
+            middle['LRemaining']=middle['LRemaining']-calLDeployed;
+            middle['LDeployed']+=calLDeployed;
+            middle['FRemaining'] = 0;
+            middle['reduced']=true;
+        }else{
+            //need help from left/right
+            //first settle the all battalion having with self
+            //then ask for help
+            middle['LRemaining']=0;
+            middle['LDeployed']=middle['LTotal'];
+            middle['FRemaining'] = middle['FTotal']-middle['LDeployed'] * 2;
+            middle['reduced']=false;
+            const res=this.takeHelp(left,middle,right);
+            right=res['right'];
+            left=res['left'];
+            middle=res['middle'];
+        }
+        return {left,middle,right,status}
+    }
+
 }
